@@ -1,7 +1,8 @@
-# mailSender-App
+### mailSender-App
 In this project Node nodemailer and OAuth2 is used for sending email.
-# Send mails from Gmail using Nodemailer
-This is a sample script for sending e-mails from gmail using Nodemailer. ALl ```process.env.``` parameters are retrive from [google cloud console](https://console.cloud.google.com/), and some important parameters are to run this script.
+
+### Send mails from Gmail using Nodemailer
+This is a sample script for sending e-mails from gmail using Nodemailer. All ```process.env.``` parameters are retrive from [google cloud console](https://console.cloud.google.com/), and some important parameters are to run this script.
 
 ##### Scope Of This Project is: ``https://mail.google.com/``.
 - Gmail Address
@@ -49,6 +50,6 @@ transporter.sendMail(mailOptions, (err, res) => {
 });
 ~~~
 
-## Reference :
+### Reference :
 - [Nodemailer](https://www.npmjs.com/package/nodemailer)
 - [Nodemailer OAuth2](https://nodemailer.com/smtp/oauth2/)
