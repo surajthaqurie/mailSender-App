@@ -16,7 +16,9 @@ This is a sample script for sending e-mails from gmail using Nodemailer. All ```
 
 
 ~~~javascript
-- Install Nodemailer ```npm install nodemailer```.
+- Install Nodemailer npm install nodemailer.
+- Install googleapis npm install googleapis.
+
 const nodemailer = require('nodemailer');
 
 var transporter = nodemailer.createTransport({
