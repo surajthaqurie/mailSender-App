@@ -71,7 +71,7 @@ router.post('/send', (req, res) => {
     <ul>
     <li>Name: ${req.body.name}</li>
     <li>Company: ${req.body.company}</li>
-    <li>Email: ${req.body.name}</li>
+    <li>Email: ${req.body.email}</li>
     <li>PhoneNo: ${req.body.phone}</li>
     </ul>
     <h4>Message:</h4><p> ${req.body.message}</p>
@@ -97,7 +97,7 @@ router.post('/send', (req, res) => {
     // Setup email data with unicode symbols
     let mailOptions = {
         from: process.env.YOUR_GMAIL_ADDRESS, // sender address
-        to: 'devlop_143@gmail.com', // list of receivers
+        to: req.body.email,   // list of receivers
         subject: "Important  Notice", // Subject line
         // text: "Hello world?", // plain text body
         html: output, // html body
@@ -110,8 +110,9 @@ router.post('/send', (req, res) => {
             return console.log(error);
         }
         smtpTransport.close();
-        console.log("Message sent: %s", info.messageId);
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        
+        // console.log("Message sent: %s", info.messageId);
+        // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
         res.render('contact.handlebars', {
             msg: 'Email Has Been Send',
