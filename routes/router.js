@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
@@ -7,7 +6,57 @@ const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
 
+function getOAuthClient() {
+    return new OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        process.env.GOOGLE_Redirect_URL
+    );
+}
 
+const oauth2Client = getOAuthClient();
+
+function getAuthUrl() {
+    // generate a url that asks permissions for Gmail
+    const scopes = process.env.GOOGLE_SCOPE;
+
+    var url = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: scopes,
+        //use this below to force approval (will generate refresh_token)
+        // approval_prompt: 'force'
+        code_verifier: 'plain'
+    });
+
+    return url;
+}
+
+// console.log( getAuthUrl());
+
+code = process.env.AUTHORIZATION_CODE;
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN
+});
+
+
+const TokenAccess = async () => {
+    return new Promise(async (resolve, reject) => {
+        const { token } = await oauth2Client.getAccessToken();
+
+        // console.log('Token Here', token)
+        return resolve(token);
+    });
+}
+
+const accessToken = async () => {
+
+    const accessTokenValue = await TokenAccess();
+    // console.log('TOken Received ', accessTokenValue)
+    return accessTokenValue;
+}
+
+// accessToken();
 
 router.get('/', (req, res) => {
     // res.send('Server is up and running');
@@ -17,50 +66,57 @@ router.get('/', (req, res) => {
 router.post('/send', (req, res) => {
     // console.log(req.body);
     const output = `
-    <p>You have a new contact request</p>
-    <h3>Contact Details</h3>
+    <p><h3>You have a new contact request</h3></p>
+    <h4>Contact Details</h4>
     <ul>
     <li>Name: ${req.body.name}</li>
     <li>Company: ${req.body.company}</li>
     <li>Email: ${req.body.name}</li>
     <li>PhoneNo: ${req.body.phone}</li>
     </ul>
-    <h3>Message:</h3><p> ${req.body.message}</p>
+    <h4>Message:</h4><p> ${req.body.message}</p>
     `;
 
 
-    // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
-        host: 'mail.traversymedia.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+    // Create Reusable Transporter Object Using The Default SMTP(Gmail) Transport
+    const smtpTransport = nodemailer.createTransport({
+        service: 'Gmail',
+        // host: "smtp.gmail.com",
+        // port: 587,
+        // secure: false,
         auth: {
-            user: process.env.GMAIL_ADDRESS, // generated ethereal user
-            pass: process.env.GMAIL_PASS // generated ethereal password
-        },
-        tls: {
-            rejectUnauthorized: false
+            type: 'OAuth2',
+            user: process.env.YOUR_GMAIL_ADDRESS,
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            refreshToken: process.env.REFRESH_TOKEN,
+            accessToken: accessToken()
         }
     });
 
     // Setup email data with unicode symbols
     let mailOptions = {
-        from: `"Suraj Chand" <${process.env.GMAIL_ADDRESS}>`, // sender address
-        to: 'surajchan68@gmail.com', // list of receivers
-        subject: "Node Email Sender ✔", // Subject line
-        text: "Hello world?", // plain text body
-        html: output // html body
+        from: process.env.YOUR_GMAIL_ADDRESS, // sender address
+        to: 'devlop_143@gmail.com', // list of receivers
+        subject: "Important  Notice", // Subject line
+        // text: "Hello world?", // plain text body
+        html: output, // html body
+        generateTextFromHTML: true,
     }
     // send mail with defined transport object
-    transporter.sendMail(mailOptions, (error, info) => {
+    smtpTransport.sendMail(mailOptions, (error, info) => {
         if (error) {
+            smtpTransport.close();
             return console.log(error);
         }
-
+        smtpTransport.close();
         console.log("Message sent: %s", info.messageId);
         console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
-        res.render('contact.handlebars', { msg: 'email has been send' })
+        res.render('contact.handlebars', {
+            msg: 'Email Has Been Send',
+            layout: false
+        });
     });
 });
 
